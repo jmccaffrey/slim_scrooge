@@ -10,8 +10,8 @@ module SlimScrooge
     end
 
     module ClassMethods
-      def find_by_sql_with_slim_scrooge(sql)
-        return find_by_sql_without_slim_scrooge(sql) if sql.is_a?(Array) # don't mess with user's custom query
+      def find_by_sql_with_slim_scrooge(sql, skip_instantiation = false)
+        return find_by_sql_without_slim_scrooge(sql,skip_instantiation) if sql.is_a?(Array) # don't mess with user's custom query
         callsite_key = SlimScrooge::Callsites.callsite_key(sql)
         if SlimScrooge::Callsites.has_key?(callsite_key)
           find_with_callsite_key(sql, callsite_key)
@@ -19,7 +19,7 @@ module SlimScrooge
           rows = connection.select_all(sql, "#{name} Load SlimScrooged 1st time")
           rows.collect! {|row| instantiate(MonitoredHash[row, {}, callsite])}
         else
-          find_by_sql_without_slim_scrooge(sql)
+          find_by_sql_without_slim_scrooge(sql, skip_instantiation)
         end
       end
 
